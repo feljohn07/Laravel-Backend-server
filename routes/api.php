@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,3 +36,9 @@ Route::post('supplier', [SupplierController::class, 'store']);
 Route::get('supplier/{id}', [SupplierController::class, 'show']);
 Route::put('supplier/{id}', [SupplierController::class, 'update']);
 Route::delete('supplier/{id}', [SupplierController::class, 'destroy']);
+
+Route::get('product', [ProductController::class, 'index']);
+Route::post('product', [ProductController::class, 'store']);
+Route::get('product/{id}', [ProductController::class, 'show']);
+Route::put('product/{id}', [ProductController::class, 'update']);
+Route::delete('product/{id}', [ProductController::class, 'destroy']);

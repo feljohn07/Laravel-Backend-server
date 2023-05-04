@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Supplier;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Validator;
 
-class SupplierController extends Controller
+class PurchaseController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -19,9 +19,8 @@ class SupplierController extends Controller
         $limit = $param['limit'] ?? 10;
         $query = $param['query'] ?? "";
 
-        $customer = Supplier::
-            where('name', 'like', '%' . $query . '%')
-            ->orWhere('address', 'like', '%' . $query . '%')
+        $product = Product::
+            where('product_name', 'like', '%' . $query . '%')
             ->orderBy('created_at', 'desc')
             ->paginate($limit);
 
@@ -29,8 +28,8 @@ class SupplierController extends Controller
             "success" => true,
             "status" => 200,
             "request" => $request->attributes,
-            "message" => "Supplier List",
-            "data" => $customer
+            "message" => "Product List",
+            "data" => $product
         ]);
     }
 
@@ -42,9 +41,14 @@ class SupplierController extends Controller
         //
         $input = $request->all();
 
+        // product_name
+        // minimum_quantity
+        // retail_price
+        // quantity_on_hand
         $validator = Validator::make($input, [
-            'name' => 'required',
-            'address' => 'required'
+            'product_name' => 'required',
+            'minimum_quantity' => 'required',
+            'retail_price' => 'required',
         ]);
 
         if($validator->fails()){
@@ -56,13 +60,13 @@ class SupplierController extends Controller
             ]);
         }
 
-        $customer = Supplier::create($input);
+        $product = Product::create($input);
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Supplier created successfully.",
-            "data" =>  $customer
+            "message" => "Product created successfully.",
+            "data" =>  $product
         ]);
     }
 
@@ -74,14 +78,14 @@ class SupplierController extends Controller
         //
         $input = $request;
 
-        $customer = Supplier::find($input->id);
+        $product = Product::find($input->id);
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Supplier Found.",
+            "message" => "Product Found.",
             "request" => $input->attributes,
-            "data" =>  $customer
+            "data" =>  $product
         ]);
 
     }
@@ -94,17 +98,26 @@ class SupplierController extends Controller
         //
         $input = $request;
 
-        $customer = Supplier::find($input->id);
+        return response()->json([
+            $input->product_name
+        ]);
 
-        $customer->name = $input->name;
-        $customer->address = $input->address;
-        $customer->save();
+        $product = Product::find($input->id);
+
+        // product_name
+        // retail_price
+        // quantity_on_hand
+
+        $product->product_name = $input->product_name;
+        $product->minimum_quantity = $input->minimum_quantity;
+        $product->retail_price = $input->retail_price;
+        $product->save();
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Supplier updated successfully.",
-            "data" =>  $customer
+            "message" => "Product updated successfully.",
+            "data" =>  $product
         ]);
     }
 
@@ -115,30 +128,29 @@ class SupplierController extends Controller
     {
         //
         $input = $request;
-        $customer = Supplier::destroy($input->id);
+        $product = Product::destroy($input->id);
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Supplier deleted successfully.",
-            "data" =>  $customer
+            "message" => "Product deleted successfully.",
+            "data" =>  $product
         ]);
     }
 
-    public function search(Request $request)
-    {
-        $input = $request;
+    // public function search(Request $request)
+    // {
+    //     $input = $request;
 
-        $customer = Supplier::where('name', 'like', '%' . $input->name . '%')
-            ->get();
+    //     $customer = Customer::where('name', 'like', '%' . $input->name . '%')
+    //         ->get();
 
-        return response()->json([
-            "status" => 200,
-            "success" => true,
-            "message" => "Supplier Found.",
-            "request" => $input->attributes,
-            "data" =>  $customer
-        ]);
-    }
+    //     return response()->json([
+    //         "status" => 200,
+    //         "success" => true,
+    //         "message" => "Customer Found.",
+    //         "request" => $input->attributes,
+    //         "data" =>  $customer
+    //     ]);
+    // }
 }
-

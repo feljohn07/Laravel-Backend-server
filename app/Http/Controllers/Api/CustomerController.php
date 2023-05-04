@@ -22,6 +22,7 @@ class CustomerController extends Controller
         $customer = Customer::
             where('name', 'like', '%' . $query . '%')
             ->orWhere('address', 'like', '%' . $query . '%')
+            ->orderBy('created_at', 'desc')
             ->paginate($limit);
 
         return response()->json([
