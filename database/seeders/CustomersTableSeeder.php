@@ -14,7 +14,7 @@ class CustomersTableSeeder extends Seeder
     public function run(): void
     {
         // Let's truncate our existing records to start from scratch.
-        Customer::truncate();
+        // Customer::truncate();
 
         $faker = \Faker\Factory::create();
 

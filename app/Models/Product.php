@@ -14,5 +14,16 @@ class Product extends Model
     // quantity_on_hand
 
     protected $fillable = ['product_name', 'minimum_quantity', 'retail_price', 'quantity_on_hand'];
+
+    public function purchase()
+    {
+        return $this->hasMany(Purchase::class, 'id');
+    }
+
+    public function order()
+    {
+        return $this->hasMany(Order::class, 'id');
+    }
+
     use HasFactory;
 }

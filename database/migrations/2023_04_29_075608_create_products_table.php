@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('product_name');
             $table->integer('minimum_quantity');
             $table->decimal('retail_price', $precision = 8, $scale = 2);
-            $table->integer('quantity_on_hand');
+            $table->integer('quantity_on_hand')->default('0');
             $table->timestamps();
         });
     }

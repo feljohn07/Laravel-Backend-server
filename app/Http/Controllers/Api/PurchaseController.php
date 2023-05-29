@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -19,8 +21,9 @@ class PurchaseController extends Controller
         $limit = $param['limit'] ?? 10;
         $query = $param['query'] ?? "";
 
-        $product = Product::
-            where('product_name', 'like', '%' . $query . '%')
+        $purchase = Purchase::
+            with('supplier')
+            ->with('product')
             ->orderBy('created_at', 'desc')
             ->paginate($limit);
 
@@ -28,8 +31,19 @@ class PurchaseController extends Controller
             "success" => true,
             "status" => 200,
             "request" => $request->attributes,
-            "message" => "Product List",
-            "data" => $product
+            "message" => "Purchase List",
+            "data" => $purchase
+        ]);
+    }
+
+    public function getSuppliers(Request $request)
+    {
+        $suppliers = Supplier::all();
+        return response()->json([
+            "success" => true,
+            "status" => 200,
+            "message" => "Supplier Lists",
+            "data" => $suppliers
         ]);
     }
 
@@ -38,7 +52,6 @@ class PurchaseController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $input = $request->all();
 
         // product_name
@@ -46,9 +59,11 @@ class PurchaseController extends Controller
         // retail_price
         // quantity_on_hand
         $validator = Validator::make($input, [
-            'product_name' => 'required',
-            'minimum_quantity' => 'required',
-            'retail_price' => 'required',
+            'product_id' => 'required',
+            'supplier_id' => 'required',
+            'purchase_date' => 'required',
+            'purchase_price' => 'required',
+            'purchase_quantity' => 'required',
         ]);
 
         if($validator->fails()){
@@ -60,13 +75,17 @@ class PurchaseController extends Controller
             ]);
         }
 
-        $product = Product::create($input);
+        $purchase = Purchase::create($input);
+
+        $product = Product::find($input['product_id']);
+        $product->quantity_on_hand =  $product->quantity_on_hand + $input['purchase_quantity'];
+        $product->save();
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Product created successfully.",
-            "data" =>  $product
+            "message" => "Purchase created successfully.",
+            "data" =>  $purchase
         ]);
     }
 
@@ -78,79 +97,61 @@ class PurchaseController extends Controller
         //
         $input = $request;
 
-        $product = Product::find($input->id);
+        $purchase = Purchase::find($input->id);
 
-        return response()->json([
-            "status" => 200,
-            "success" => true,
-            "message" => "Product Found.",
-            "request" => $input->attributes,
-            "data" =>  $product
-        ]);
+        if($purchase){
+            return response()->json([
+                "status" => 200,
+                "success" => true,
+                "message" => "Purchase Found.",
+                "request" => $input->attributes,
+                "data" =>  $purchase
+            ]);
+        }else{
+            return response()->json([
+                "status" => 404,
+                "success" => false,
+                "message" => "Purchase Not Found.",
+                "request" => $input->attributes,
+                "data" =>  $purchase
+            ]);
+
+        }
+
 
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request )
+    public function update(Request $request, $id )
     {
-        //
-        $input = $request;
+        $input = $request->all();
 
-        return response()->json([
-            $input->product_name
-        ]);
+        $purchase = Purchase::find($id);
 
-        $product = Product::find($input->id);
-
-        // product_name
-        // retail_price
-        // quantity_on_hand
-
-        $product->product_name = $input->product_name;
-        $product->minimum_quantity = $input->minimum_quantity;
-        $product->retail_price = $input->retail_price;
-        $product->save();
+        $purchase->update($request->all());
 
         return response()->json([
             "status" => 200,
             "success" => true,
             "message" => "Product updated successfully.",
-            "data" =>  $product
+            "data" =>  $purchase
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request )
+    public function destroy(Request $request, $id )
     {
-        //
-        $input = $request;
-        $product = Product::destroy($input->id);
+        $purchase = Purchase::destroy($id);
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Product deleted successfully.",
-            "data" =>  $product
+            "message" => "Purchase deleted successfully.",
+            "data" =>  $purchase
         ]);
     }
-
-    // public function search(Request $request)
-    // {
-    //     $input = $request;
-
-    //     $customer = Customer::where('name', 'like', '%' . $input->name . '%')
-    //         ->get();
-
-    //     return response()->json([
-    //         "status" => 200,
-    //         "success" => true,
-    //         "message" => "Customer Found.",
-    //         "request" => $input->attributes,
-    //         "data" =>  $customer
-    //     ]);
-    // }
 }

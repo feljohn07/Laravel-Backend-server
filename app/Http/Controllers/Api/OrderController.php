@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\Order;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -19,8 +21,9 @@ class OrderController extends Controller
         $limit = $param['limit'] ?? 10;
         $query = $param['query'] ?? "";
 
-        $product = Product::
-            where('product_name', 'like', '%' . $query . '%')
+        $order = Order::
+            with('customer')
+            ->with('product')
             ->orderBy('created_at', 'desc')
             ->paginate($limit);
 
@@ -28,8 +31,19 @@ class OrderController extends Controller
             "success" => true,
             "status" => 200,
             "request" => $request->attributes,
-            "message" => "Product List",
-            "data" => $product
+            "message" => "Order List",
+            "data" => $order
+        ]);
+    }
+
+    public function getCustomers(Request $request)
+    {
+        $customer = Customer::all();
+        return response()->json([
+            "success" => true,
+            "status" => 200,
+            "message" => "Customer Lists",
+            "data" => $customer
         ]);
     }
 
@@ -38,17 +52,14 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $input = $request->all();
 
-        // product_name
-        // minimum_quantity
-        // retail_price
-        // quantity_on_hand
         $validator = Validator::make($input, [
-            'product_name' => 'required',
-            'minimum_quantity' => 'required',
-            'retail_price' => 'required',
+            'product_id' => 'required',
+            'customer_id' => 'required',
+            'order_date' => 'required',
+            'order_price' => 'required',
+            'order_quantity' => 'required',
         ]);
 
         if($validator->fails()){
@@ -60,13 +71,17 @@ class OrderController extends Controller
             ]);
         }
 
-        $product = Product::create($input);
+        $order = Order::create($input);
+
+        $product = Product::find($input['product_id']);
+        $product->quantity_on_hand =  $product->quantity_on_hand - $input['order_quantity'];
+        $product->save();
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Product created successfully.",
-            "data" =>  $product
+            "message" => "Order created successfully.",
+            "data" =>  $order
         ]);
     }
 
@@ -78,14 +93,14 @@ class OrderController extends Controller
         //
         $input = $request;
 
-        $product = Product::find($input->id);
+        $order = Order::find($input->id);
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Product Found.",
+            "message" => "Order Found.",
             "request" => $input->attributes,
-            "data" =>  $product
+            "data" =>  $order
         ]);
 
     }
@@ -93,64 +108,34 @@ class OrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request )
+    public function update(Request $request, $id )
     {
-        //
-        $input = $request;
 
-        return response()->json([
-            $input->product_name
-        ]);
+        $order = Order::find($id);
 
-        $product = Product::find($input->id);
-
-        // product_name
-        // retail_price
-        // quantity_on_hand
-
-        $product->product_name = $input->product_name;
-        $product->minimum_quantity = $input->minimum_quantity;
-        $product->retail_price = $input->retail_price;
-        $product->save();
+        $order->update($request->all());
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Product updated successfully.",
-            "data" =>  $product
+            "message" => "Order updated successfully.",
+            "data" =>  $order
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request )
+    public function destroy(Request $request, $id )
     {
-        //
-        $input = $request;
-        $product = Product::destroy($input->id);
+        $order = Order::destroy($id);
 
         return response()->json([
             "status" => 200,
             "success" => true,
-            "message" => "Product deleted successfully.",
-            "data" =>  $product
+            "message" => "Order deleted successfully.",
+            "data" =>  $order
         ]);
     }
 
-    // public function search(Request $request)
-    // {
-    //     $input = $request;
-
-    //     $customer = Customer::where('name', 'like', '%' . $input->name . '%')
-    //         ->get();
-
-    //     return response()->json([
-    //         "status" => 200,
-    //         "success" => true,
-    //         "message" => "Customer Found.",
-    //         "request" => $input->attributes,
-    //         "data" =>  $customer
-    //     ]);
-    // }
 }

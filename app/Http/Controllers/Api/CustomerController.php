@@ -76,13 +76,24 @@ class CustomerController extends Controller
 
         $customer = Customer::find($input->id);
 
-        return response()->json([
-            "status" => 200,
-            "success" => true,
-            "message" => "Customer Found.",
-            "request" => $input->attributes,
-            "data" =>  $customer
-        ]);
+        if($customer){
+
+            return response()->json([
+                "status" => 200,
+                "success" => true,
+                "message" => "Customer Found.",
+                "request" => $input->attributes,
+                "data" =>  $customer
+            ]);
+        }else{
+            return response()->json([
+                "status" => 404,
+                "success" => true,
+                "message" => "Customer Not Found.",
+                "request" => $input->attributes,
+                "data" =>  $customer
+            ]);
+        }
 
     }
 

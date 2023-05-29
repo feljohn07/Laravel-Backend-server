@@ -19,7 +19,7 @@ class SupplierController extends Controller
         $limit = $param['limit'] ?? 10;
         $query = $param['query'] ?? "";
 
-        $customer = Supplier::
+        $supplier = Supplier::
             where('name', 'like', '%' . $query . '%')
             ->orWhere('address', 'like', '%' . $query . '%')
             ->orderBy('created_at', 'desc')
@@ -30,7 +30,7 @@ class SupplierController extends Controller
             "status" => 200,
             "request" => $request->attributes,
             "message" => "Supplier List",
-            "data" => $customer
+            "data" => $supplier
         ]);
     }
 
@@ -56,13 +56,13 @@ class SupplierController extends Controller
             ]);
         }
 
-        $customer = Supplier::create($input);
+        $supplier = Supplier::create($input);
 
         return response()->json([
             "status" => 200,
             "success" => true,
             "message" => "Supplier created successfully.",
-            "data" =>  $customer
+            "data" =>  $supplier
         ]);
     }
 
@@ -74,14 +74,14 @@ class SupplierController extends Controller
         //
         $input = $request;
 
-        $customer = Supplier::find($input->id);
+        $supplier = Supplier::find($input->id);
 
         return response()->json([
             "status" => 200,
             "success" => true,
             "message" => "Supplier Found.",
             "request" => $input->attributes,
-            "data" =>  $customer
+            "data" =>  $supplier
         ]);
 
     }
@@ -94,17 +94,17 @@ class SupplierController extends Controller
         //
         $input = $request;
 
-        $customer = Supplier::find($input->id);
+        $supplier = Supplier::find($input->id);
 
-        $customer->name = $input->name;
-        $customer->address = $input->address;
-        $customer->save();
+        $supplier->name = $input->name;
+        $supplier->address = $input->address;
+        $supplier->save();
 
         return response()->json([
             "status" => 200,
             "success" => true,
             "message" => "Supplier updated successfully.",
-            "data" =>  $customer
+            "data" =>  $supplier
         ]);
     }
 
@@ -115,13 +115,13 @@ class SupplierController extends Controller
     {
         //
         $input = $request;
-        $customer = Supplier::destroy($input->id);
+        $supplier = Supplier::destroy($input->id);
 
         return response()->json([
             "status" => 200,
             "success" => true,
             "message" => "Supplier deleted successfully.",
-            "data" =>  $customer
+            "data" =>  $supplier
         ]);
     }
 
@@ -129,7 +129,7 @@ class SupplierController extends Controller
     {
         $input = $request;
 
-        $customer = Supplier::where('name', 'like', '%' . $input->name . '%')
+        $supplier = Supplier::where('name', 'like', '%' . $input->name . '%')
             ->get();
 
         return response()->json([
@@ -137,7 +137,7 @@ class SupplierController extends Controller
             "success" => true,
             "message" => "Supplier Found.",
             "request" => $input->attributes,
-            "data" =>  $customer
+            "data" =>  $supplier
         ]);
     }
 }
